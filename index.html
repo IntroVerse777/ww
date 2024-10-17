@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Token Dashboard</title>
+    <script defer src="https://vercel-analytics.vercel.app/script.js"></script>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden; /* Prevent horizontal overflow */
+        }
+
+        /* Body Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Container for Advertisement Banner */
+        .banner {
+            width: 100%;
+            max-width: 1200px;
+            height: 100px;
+            background-color: #1E90FF; /* Placeholder banner color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 24px;
+            margin-bottom: 20px; /* Space below the banner */
+            border-radius: 8px;
+            overflow: hidden; /* Ensure content stays within the banner */
+        }
+
+        .banner a {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures the image covers the entire banner */
+        }
+
+        /* Container for Columns */
+        .columns-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap; /* Allow wrapping for responsive design */
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 20px; /* Space below columns */
+        }
+
+        /* Column Styling */
+        .column {
+            background-color: #1c1c1c;
+            border-radius: 8px;
+            width: calc(33% - 20px); /* Adjusted width for 3 columns */
+            max-height: 60vh; /* Maximum height for the column */
+            overflow-y: auto; /* Scroll only the content inside the column */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .column-title {
+            color: #1E90FF;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 15px; /* Space below the title */
+        }
+
+        /* Token Container */
+        .token-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Individual Token Card */
+        .token {
+            background-color: #2c2c2c;
+            border-radius: 8px;
+            padding: 8px;
+            width: 140px; /* Fixed size for the tokens */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+            font-size: 12px;
+            opacity: 0;
+        }
+
+        .token.show {
+            opacity: 1;
+        }
+
+        .token:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .token img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-bottom: 5px;
+        }
+
+        .token p {
+            margin: 3px 0;
+            font-size: 10px;
+            line-height: 1.2;
+            color: #1E90FF;
+        }
+
+        /* Styled Submission Button */
+        .submission-button {
+            background-color: #1E90FF;
+            border: none;
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 50px; /* Space above the footer menu */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .submission-button:hover {
+            background-color: #63B8FF;
+            transform: translateY(-3px);
+        }
+
+        /* Fixed Footer with Menu */
+        .footer-menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #1E1E1E;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 15px 0;
+            box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        .footer-menu button {
+            background-color: #1E90FF;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
+
+        .footer-menu button:hover {
+            background-color: #63B8FF;
+        }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto; /* Allow scrolling for overflow content */
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%; /* Larger modal width */
+            max-width: 1200px; /* Maximum width for larger screens */
+            height: 80%; /* Larger height */
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+            position: relative;
+            transition: all 0.3s ease-in-out; /* Smooth transition */
+        }
+
+        .modal-content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #1E90FF;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .column {
+                width: 100%; /* Full width for each column */
+                margin-bottom: 20px; /* Space below each column */
+            }
+
+            .footer-menu button {
+                font-size: 12px;
+                padding: 8px 15px;
+            }
+
+            .submission-button {
+                font-size: 14px;
+                padding: 10px 25px;
+            }
+
+            .modal-content {
+                width: 90%; /* Take more width on mobile */
+                height: 90%; /* Take more height on mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Placeholder Advertisement Banner -->
+    <div class="banner">
+        <a href="https://t.me/BullxBetaBot?start=access_GAP8NP3I5JK" target="_blank">
+            <img src="img/Untitled design(9).png" alt="Banner Image" class="banner-image">
+        </a>
+    </div>
+    
+    <div class="columns-container">
+        <!-- New Tokens Column -->
+        <div class="column">
+            <div class="column-title">Solana New Tokens</div>
+            <div class="token-container" id="new-tokens">
+                <!-- New Tokens will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Boosted Tokens Column -->
+        <div class="column">
+            <div class="column-title">Solana Boosted Tokens</div>
+            <div class="token-container" id="boosted-tokens">
+                <!-- Boosted Tokens will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Featured Memes Column -->
+        <div class="column">
+            <div class="column-title">Featured Memes</div>
+            <div class="token-container" id="featured-memes">
+                <!-- Featured Memes will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission Button for Advertisement -->
+    <button class="submission-button" onclick="alert('Submit your project for advertisement here!')">Submit your project for advertisement</button>
+
+    <!-- Footer Menu -->
+    <div class="footer-menu">
+        <button onclick="window.location.reload()">Home</button>
+        <button onclick="alert('Advertising Options')">Advertise</button>
+        <button onclick="alert('More features coming soon!')">More</button>
+    </div>
+
+    <!-- Modal for Chart -->
+    <div id="chart-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" onclick="closeModal()">×</button>
+            <iframe id="chart-frame" src="" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <script>
+        const REFRESH_INTERVAL = 60000;
+
+        async function updateTokens() {
+            await fetchSolanaTokens('new-tokens', 'https://api.dexscreener.com/token-profiles/latest/v1');
+            await fetchSolanaTokens('boosted-tokens', 'https://api.dexscreener.com/token-boosts/latest/v1');
+            await fetchFeaturedMemes('featured-memes');
+        }
+
+        async function fetchSolanaTokens(containerId, apiUrl) {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                const solanaTokens = data.filter(token => token.chainId === 'solana');
+
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+
+                solanaTokens.forEach(token => {
+                    const tokenElement = createTokenElement(token);
+                    container.appendChild(tokenElement);
+                    setTimeout(() => tokenElement.classList.add('show'), 100);
+                });
+            } catch (error) {
+                console.error(`Error fetching tokens from ${apiUrl}:`, error);
+            }
+        }
+
+        async function fetchFeaturedMemes(containerId) {
+            const featuredMemes = [
+            ];
+
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            featuredMemes.forEach(meme => {
+                const memeElement = createMemeElement(meme);
+                container.appendChild(memeElement);
+                setTimeout(() => memeElement.classList.add('show'), 100);
+            });
+        }
+
+        function createTokenElement(token) {
+            const tokenElement = document.createElement('div');
+            tokenElement.className = 'token';
+            tokenElement.innerHTML = `
+                <img src="${token.icon || 'https://via.placeholder.com/40'}" alt="Token icon">
+                <p>Boost Amount: ${token.amount || 'N/A'}</p>
+                <p>Total Amount: ${token.totalAmount || 'N/A'}</p>
+            `;
+            tokenElement.addEventListener('click', () => showChartModal(token.chainId, token.tokenAddress));
+            return tokenElement;
+        }
+
+        function createMemeElement(meme) {
+            const memeElement = document.createElement('div');
+            memeElement.className = 'token';
+            memeElement.innerHTML = `
+                <img src="${meme.icon}" alt="Meme icon">
+                <p>Name: ${meme.name}</p>
+                <p>Description: ${meme.description}</p>
+            `;
+            return memeElement;
+        }
+
+        function showChartModal(chainId, address) {
+            const chartModal = document.getElementById('chart-modal');
+            const chartFrame = document.getElementById('chart-frame');
+            const chartUrl = `https://dexscreener.com/${chainId}/${address}?embed=1&theme=dark`;
+
+            chartFrame.src = chartUrl;
+            chartModal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            const chartModal = document.getElementById('chart-modal');
+            chartModal.style.display = 'none';
+            document.getElementById('chart-frame').src = '';
+        }
+
+        updateTokens();
+        setInterval(updateTokens, REFRESH_INTERVAL);
+    </script>
+</body>
+</html>
